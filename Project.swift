@@ -1,41 +1,30 @@
 import ProjectDescription
 
-let signingSettings = SettingsDictionary()
-    .automaticCodeSigning(devTeam: "ahe64mz9kc") // Replace YOUR_TEAM_ID with your Apple Developer Team ID
-
 let project = Project(
     name: "BertCam",
-    organizationName: "BertCam",
-    settings: .settings(configurations: [
-        .debug(name: "Debug", settings: signingSettings),
-        .release(name: "Release", settings: signingSettings)
-    ]),
+    organizationName: "Rafael Bertholdo",
     targets: [
         .target(
             name: "BertCam",
             destinations: [.iPhone, .iPad],
             product: .app,
-            bundleId: "com.bertcam.app",
+            bundleId: "com.rafaelbertholdo.bertcam",
             infoPlist: .extendingDefault(with: [
                 "NSCameraUsageDescription": "BertCam needs access to your camera to record videos",
                 "NSMicrophoneUsageDescription": "BertCam needs access to your microphone to record audio",
                 "NSPhotoLibraryUsageDescription": "BertCam needs access to your photo library to save recorded videos",
-                "NSPhotoLibraryAddUsageDescription": "BertCam needs access to your photo library to save recorded videos",
-                "UIApplicationSceneManifest": [
-                    "UIApplicationSupportsMultipleScenes": false,
-                    "UISceneConfigurations": [
-                        "UIWindowSceneSessionRoleApplication": [
-                            [
-                                "UISceneConfigurationName": "Default Configuration",
-                                "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate"
-                            ]
-                        ]
-                    ]
-                ]
+                "NSPhotoLibraryAddUsageDescription": "BertCam needs access to your photo library to save recorded videos"
             ]),
             sources: ["Sources/**"],
-            resources: [.glob(pattern: "Resources/**")],
-            dependencies: []
+            resources: ["Resources/**"],
+            dependencies: [],
+            settings: .settings(
+                base: [
+                    "DEVELOPMENT_TEAM": "AHE64MZ9KC",
+                    "CODE_SIGN_STYLE": "Automatic",
+                    "CODE_SIGN_IDENTITY": "Apple Development"
+                ]
+            )
         )
     ]
 )

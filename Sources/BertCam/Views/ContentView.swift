@@ -31,10 +31,12 @@ struct ContentView: View {
                 
                 // Record Button
                 Button(action: {
-                    if viewModel.isRecording {
-                        viewModel.stopRecording()
-                    } else {
-                        viewModel.startRecording()
+                    withAnimation {
+                        if viewModel.isRecording {
+                            viewModel.stopRecording()
+                        } else {
+                            viewModel.startRecording()
+                        }
                     }
                 }) {
                     ZStack {
@@ -45,40 +47,49 @@ struct ContentView: View {
                         
                         // Main record button
                         Circle()
-                            .fill(Color.white)
+                            .fill(viewModel.isRecording ? Color.red : Color.white)
                             .frame(width: 74, height: 74)
+                            .overlay(
+                                Group {
+                                    if viewModel.isRecording {
+                                        // Pulsing animation when recording
+                                        Circle()
+                                            .stroke(Color.red, lineWidth: 2)
+                                            .frame(width: 82, height: 82)
+                                            .scaleEffect(1.1)
+                                            .opacity(0.5)
+                                            .animation(
+                                                Animation.easeInOut(duration: 1)
+                                                    .repeatForever(autoreverses: true),
+                                                value: viewModel.isRecording
+                                            )
+                                    }
+                                }
+                            )
                         
-                        // Recording indicator
-                        Circle()
-                            .fill(Color.red)
-                            .frame(width: 66, height: 66)
-                            .scaleEffect(viewModel.isRecording ? 1 : 0.92)
-                            .animation(.easeInOut(duration: 0.2), value: viewModel.isRecording)
-                        
+                        // Recording state symbol
                         if viewModel.isRecording {
-                            // Recording stop symbol
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(Color.white)
-                                .frame(width: 28, height: 28)
-                                .transition(.scale)
+                                .frame(width: 26, height: 26)
+                                .transition(.scale.combined(with: .opacity))
+                        } else {
+                            Circle()
+                                .fill(Color.red)
+                                .frame(width: 66, height: 66)
+                                .transition(.scale.combined(with: .opacity))
                         }
                     }
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                            .frame(width: 94, height: 94)
-                    )
                 }
+                .buttonStyle(RecordButtonStyle())
                 .padding(.bottom, 30)
-                .overlay(
-                    // Recording timer
-                    Group {
-                        if viewModel.isRecording {
-                            RecordingIndicator()
-                                .offset(y: -50)
-                        }
-                    }
-                )
+                
+                // Recording timer and indicator
+                if viewModel.isRecording {
+                    RecordingIndicator()
+                        .padding(.bottom, 16)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
         }
         .sheet(isPresented: $viewModel.showingAudioInputPicker) {

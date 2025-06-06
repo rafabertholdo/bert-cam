@@ -26,13 +26,34 @@ class CameraService: NSObject, ObservableObject {
             return
         }
         
+        // Configure audio session
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [])
+            try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("Failed to set audio session category: \(error)")
+        }
+        
+        // Add video input
         if captureSession.canAddInput(videoInput) {
             captureSession.addInput(videoInput)
         }
         
+        // Add audio input
+        if let audioDevice = AVCaptureDevice.default(for: .audio),
+           let audioInput = try? AVCaptureDeviceInput(device: audioDevice),
+           captureSession.canAddInput(audioInput) {
+            captureSession.addInput(audioInput)
+        }
+        
+        // Add video output
         videoOutput = AVCaptureMovieFileOutput()
         if let videoOutput = videoOutput, captureSession.canAddOutput(videoOutput) {
             captureSession.addOutput(videoOutput)
+            // Configure audio settings
+            if let audioConnection = videoOutput.connection(with: .audio) {
+                audioConnection.isEnabled = true
+            }
         }
         
         previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
@@ -51,8 +72,31 @@ class CameraService: NSObject, ObservableObject {
     
     func selectAudioInput(_ input: AVAudioSessionPortDescription) {
         do {
+            // Stop the session before reconfiguring
+            captureSession?.stopRunning()
+            
+            // Set the preferred input
             try AVAudioSession.sharedInstance().setPreferredInput(input)
+            
+            // Remove existing audio inputs
+            if let existingInputs = captureSession?.inputs {
+                for input in existingInputs where input.ports.contains(where: { $0.mediaType == .audio }) {
+                    captureSession?.removeInput(input)
+                }
+            }
+            
+            // Add new audio input
+            if let audioDevice = AVCaptureDevice.default(for: .audio),
+               let audioInput = try? AVCaptureDeviceInput(device: audioDevice),
+               let captureSession = captureSession,
+               captureSession.canAddInput(audioInput) {
+                captureSession.addInput(audioInput)
+            }
+            
             selectedAudioInput = input
+            
+            // Restart the session
+            captureSession?.startRunning()
         } catch {
             print("Failed to select audio input: \(error)")
         }
