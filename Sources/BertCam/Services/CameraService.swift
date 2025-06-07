@@ -47,7 +47,7 @@ class CameraService: NSObject, ObservableObject {
     @Published var selectedAudioInput: AVAudioSessionPortDescription?
     
     private var captureSession: AVCaptureSession?
-    private var videoOutput: AVCaptureMovieFileOutput?
+    var videoOutput: AVCaptureMovieFileOutput?
     private var previewLayer: AVCaptureVideoPreviewLayer?
     
     /// Initializes a new camera service.
@@ -207,6 +207,10 @@ class CameraService: NSObject, ObservableObject {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.captureSession?.stopRunning()
         }
+    }
+    
+    func updateSession(on view: AVCaptureVideoPreviewLayer) {
+        view.session = captureSession
     }
 }
 

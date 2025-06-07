@@ -3,17 +3,29 @@ import AVFoundation
 
 struct CameraPreviewView: UIViewRepresentable {
     let cameraService: CameraService
-    
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: UIScreen.main.bounds)
-        
-        if let previewLayer = cameraService.getPreviewLayer() {
-            previewLayer.frame = view.frame
-            view.layer.addSublayer(previewLayer)
+
+    class VideoPreviewView: UIView {
+        public override class var layerClass: AnyClass {
+             return AVCaptureVideoPreviewLayer.self
         }
         
+        var videoPreviewLayer: AVCaptureVideoPreviewLayer {
+            return layer as! AVCaptureVideoPreviewLayer
+        }
+    }
+
+    var view: VideoPreviewView = {
+        let view = VideoPreviewView()
+        view.backgroundColor = .black
+        view.videoPreviewLayer.videoGravity = .resizeAspectFill
         return view
+    }()
+
+    func makeUIView(context: Context) -> UIView {
+        cameraService.updateSession(on: view.videoPreviewLayer)
+        return self.view
     }
     
-    func updateUIView(_ uiView: UIView, context: Context) {}
+    func updateUIView(_ uiView: UIView, context: Context) {
+    }
 }
