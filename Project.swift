@@ -22,7 +22,9 @@ let project = Project(
                 base: [
                     "DEVELOPMENT_TEAM": "AHE64MZ9KC",
                     "CODE_SIGN_STYLE": "Automatic",
-                    "CODE_SIGN_IDENTITY": "Apple Development"
+                    "CODE_SIGN_IDENTITY": "Apple Development",
+                    "TARGETED_DEVICE_FAMILY": "1,2",
+                    "IPHONEOS_DEPLOYMENT_TARGET": "15.0"
                 ]
             )
         )
