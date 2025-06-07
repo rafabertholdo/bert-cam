@@ -65,6 +65,11 @@ class CameraService: NSObject, ObservableObject {
             try AVAudioSession.sharedInstance().setCategory(.playAndRecord)
             try AVAudioSession.sharedInstance().setActive(true)
             availableAudioInputs = AVAudioSession.sharedInstance().availableInputs ?? []
+            
+            // Select the first available audio input by default
+            if let firstInput = availableAudioInputs.first {
+                selectAudioInput(firstInput)
+            }
         } catch {
             print("Failed to load audio inputs: \(error)")
         }
@@ -85,12 +90,22 @@ class CameraService: NSObject, ObservableObject {
                 }
             }
             
+            // Configure audio session
+            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker])
+            try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+            
             // Add new audio input
             if let audioDevice = AVCaptureDevice.default(for: .audio),
                let audioInput = try? AVCaptureDeviceInput(device: audioDevice),
                let captureSession = captureSession,
                captureSession.canAddInput(audioInput) {
                 captureSession.addInput(audioInput)
+                
+                // Ensure audio connection is enabled
+                if let videoOutput = videoOutput,
+                   let audioConnection = videoOutput.connection(with: .audio) {
+                    audioConnection.isEnabled = true
+                }
             }
             
             selectedAudioInput = input
@@ -110,12 +125,10 @@ class CameraService: NSObject, ObservableObject {
         let fileUrl = documentsPath.appendingPathComponent(fileName)
         
         videoOutput.startRecording(to: fileUrl, recordingDelegate: self)
-        isRecording = true
     }
     
     func stopRecording() {
         videoOutput?.stopRecording()
-        isRecording = false
     }
     
     func getPreviewLayer() -> AVCaptureVideoPreviewLayer? {
