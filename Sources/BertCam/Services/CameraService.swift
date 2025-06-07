@@ -2,15 +2,57 @@ import Foundation
 import AVFoundation
 import Photos
 
+/// A service that manages camera and audio functionality for video recording.
+///
+/// The `CameraService` class handles all camera-related operations, including:
+/// - Camera setup and configuration
+/// - Video recording
+/// - Audio input management
+/// - Photo library integration
+///
+/// ## Usage
+///
+/// ```swift
+/// let cameraService = CameraService()
+/// cameraService.startSession()
+/// cameraService.startRecording()
+/// ```
+///
+/// ## Topics
+///
+/// ### Recording
+///
+/// - ``startRecording()``
+/// - ``stopRecording()``
+///
+/// ### Audio Input
+///
+/// - ``availableAudioInputs``
+/// - ``selectedAudioInput``
+/// - ``selectAudioInput(_:)``
+///
+/// ### Session Management
+///
+/// - ``startSession()``
+/// - ``stopSession()``
+/// - ``getPreviewLayer()``
 class CameraService: NSObject, ObservableObject {
+    /// The current recording state.
     @Published var isRecording = false
+    
+    /// Available audio input sources.
     @Published var availableAudioInputs: [AVAudioSessionPortDescription] = []
+    
+    /// The currently selected audio input source.
     @Published var selectedAudioInput: AVAudioSessionPortDescription?
     
     private var captureSession: AVCaptureSession?
     private var videoOutput: AVCaptureMovieFileOutput?
     private var previewLayer: AVCaptureVideoPreviewLayer?
     
+    /// Initializes a new camera service.
+    ///
+    /// This initializer sets up the capture session and loads available audio inputs.
     override init() {
         super.init()
         setupCaptureSession()
@@ -117,6 +159,9 @@ class CameraService: NSObject, ObservableObject {
         }
     }
     
+    /// Starts a new video recording.
+    ///
+    /// This method begins recording video to a temporary file. The recording will be saved to the photo library when stopped.
     func startRecording() {
         guard let videoOutput = videoOutput else { return }
         
@@ -127,18 +172,30 @@ class CameraService: NSObject, ObservableObject {
         videoOutput.startRecording(to: fileUrl, recordingDelegate: self)
     }
     
+    /// Stops the current video recording.
+    ///
+    /// This method stops the current recording and saves it to the photo library.
     func stopRecording() {
         videoOutput?.stopRecording()
     }
     
+    /// Returns the preview layer for displaying the camera feed.
+    ///
+    /// - Returns: An `AVCaptureVideoPreviewLayer` that can be used to display the camera feed.
     func getPreviewLayer() -> AVCaptureVideoPreviewLayer? {
         return previewLayer
     }
     
+    /// Starts the capture session.
+    ///
+    /// Call this method when you want to begin capturing video.
     func startSession() {
         captureSession?.startRunning()
     }
     
+    /// Stops the capture session.
+    ///
+    /// Call this method when you want to stop capturing video.
     func stopSession() {
         captureSession?.stopRunning()
     }

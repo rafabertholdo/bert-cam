@@ -5,6 +5,9 @@ Derived/
 Tuist/Dependencies/
 Tuist/.bundle/
 Tuist/Master.xcworkspace
+.tuist-cache/
+.swiftpm/
+.xcode.env
 
 # Xcode
 ##

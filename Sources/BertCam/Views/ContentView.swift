@@ -1,9 +1,42 @@
 import SwiftUI
 import AVFoundation
 
+/// The main view of the BertCam application.
+///
+/// The `ContentView` struct provides the main user interface for the camera application, including:
+/// - Camera preview
+/// - Record button
+/// - Audio input selection
+/// - Recording timer
+///
+/// ## Usage
+///
+/// ```swift
+/// struct MyApp: App {
+///     var body: some Scene {
+///         WindowGroup {
+///             ContentView()
+///         }
+///     }
+/// }
+/// ```
+///
+/// ## Topics
+///
+/// ### Components
+///
+/// - ``CameraPreviewView``
+/// - ``RecordButton``
+/// - ``AudioInputButton``
+/// - ``RecordingTimerView``
 struct ContentView: View {
+    /// The view model that manages the camera interface and recording state.
     @StateObject private var viewModel = CameraViewModel()
+    
+    /// The current recording duration.
     @State private var recordingTime: TimeInterval = 0
+    
+    /// A timer that updates the recording duration.
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
