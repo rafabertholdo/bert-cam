@@ -13,7 +13,8 @@ let project = Project(
                 "NSCameraUsageDescription": "BertCam needs access to your camera to record videos",
                 "NSMicrophoneUsageDescription": "BertCam needs access to your microphone to record audio",
                 "NSPhotoLibraryUsageDescription": "BertCam needs access to your photo library to save recorded videos",
-                "NSPhotoLibraryAddUsageDescription": "BertCam needs access to your photo library to save recorded videos"
+                "NSPhotoLibraryAddUsageDescription": "BertCam needs access to your photo library to save recorded videos",
+                "UILaunchStoryboardName": "LaunchScreen"
             ]),
             sources: ["Sources/**"],
             resources: ["Resources/**"],

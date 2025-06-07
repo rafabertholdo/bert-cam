@@ -118,44 +118,49 @@ class CameraService: NSObject, ObservableObject {
     }
     
     func selectAudioInput(_ input: AVAudioSessionPortDescription) {
-        do {
-            // Stop the session before reconfiguring
-            captureSession?.stopRunning()
-            
-            // Set the preferred input
-            try AVAudioSession.sharedInstance().setPreferredInput(input)
-            
-            // Remove existing audio inputs
-            if let existingInputs = captureSession?.inputs {
-                for input in existingInputs where input.ports.contains(where: { $0.mediaType == .audio }) {
-                    captureSession?.removeInput(input)
-                }
-            }
-            
-            // Configure audio session
-            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker])
-            try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
-            
-            // Add new audio input
-            if let audioDevice = AVCaptureDevice.default(for: .audio),
-               let audioInput = try? AVCaptureDeviceInput(device: audioDevice),
-               let captureSession = captureSession,
-               captureSession.canAddInput(audioInput) {
-                captureSession.addInput(audioInput)
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            do {
+                // Stop the session before reconfiguring
+                self.captureSession?.stopRunning()
                 
-                // Ensure audio connection is enabled
-                if let videoOutput = videoOutput,
-                   let audioConnection = videoOutput.connection(with: .audio) {
-                    audioConnection.isEnabled = true
+                // Set the preferred input
+                try AVAudioSession.sharedInstance().setPreferredInput(input)
+                
+                // Remove existing audio inputs
+                if let existingInputs = self.captureSession?.inputs {
+                    for input in existingInputs where input.ports.contains(where: { $0.mediaType == .audio }) {
+                        self.captureSession?.removeInput(input)
+                    }
                 }
+                
+                // Configure audio session
+                try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker])
+                try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+                
+                // Add new audio input
+                if let audioDevice = AVCaptureDevice.default(for: .audio),
+                   let audioInput = try? AVCaptureDeviceInput(device: audioDevice),
+                   let captureSession = self.captureSession,
+                   captureSession.canAddInput(audioInput) {
+                    captureSession.addInput(audioInput)
+                    
+                    // Ensure audio connection is enabled
+                    if let videoOutput = self.videoOutput,
+                       let audioConnection = videoOutput.connection(with: .audio) {
+                        audioConnection.isEnabled = true
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    self.selectedAudioInput = input
+                }
+                
+                // Restart the session
+                self.captureSession?.startRunning()
+            } catch {
+                print("Failed to select audio input: \(error)")
             }
-            
-            selectedAudioInput = input
-            
-            // Restart the session
-            captureSession?.startRunning()
-        } catch {
-            print("Failed to select audio input: \(error)")
         }
     }
     
@@ -190,14 +195,18 @@ class CameraService: NSObject, ObservableObject {
     ///
     /// Call this method when you want to begin capturing video.
     func startSession() {
-        captureSession?.startRunning()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.captureSession?.startRunning()
+        }
     }
     
     /// Stops the capture session.
     ///
     /// Call this method when you want to stop capturing video.
     func stopSession() {
-        captureSession?.stopRunning()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.captureSession?.stopRunning()
+        }
     }
 }
 
